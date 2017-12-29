@@ -17,4 +17,4 @@ if ($argc > 2) {
 
 $scriptHash = pack("H*", $scriptHashHex);
 $address = CashAddress::scriptHash($prefix, $scriptHash);
-echo $address.PHP_EOL;
+echo $address . PHP_EOL;

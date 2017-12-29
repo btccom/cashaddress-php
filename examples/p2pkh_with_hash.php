@@ -17,4 +17,4 @@ if ($argc > 2) {
 
 $keyHash = pack("H*", $keyHashHex);
 $address = CashAddress::pubKeyHash($prefix, $keyHash);
-echo $address.PHP_EOL;
+echo $address . PHP_EOL;

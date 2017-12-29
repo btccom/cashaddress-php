@@ -1,4 +1,3 @@
-
 language: php
 
 php:
@@ -32,12 +31,12 @@ script:
         else
             vendor/bin/phpunit -c phpunit.xml
         fi
-  - vendor/bin/phpcs -n --standard=PSR1,PSR2 src test examples
-  - ./validate_examples.sh
+    - vendor/bin/phpcs -n --standard=PSR1,PSR2 src test examples
+    - ./validate_examples.sh
 
 after_script:
-  - |
-      if [ "${COVERAGE}" = "true" ]; then
-        wget https://scrutinizer-ci.com/ocular.phar
-        php ocular.phar code-coverage:upload --format=php-clover build/coverage.clover;
-      fi   
+    - |
+        if [ "${COVERAGE}" = "true" ]; then
+          wget https://scrutinizer-ci.com/ocular.phar
+          php ocular.phar code-coverage:upload --format=php-clover build/coverage.clover;
+        fi

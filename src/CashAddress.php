@@ -54,7 +54,7 @@ class CashAddress
 
     /**
      * @param $string - cashaddr string
-     * @return array<string, string, string> - prefix, scriptType, hash
+     * @return string[] - prefix, scriptType, hash
      * @throws Base32Exception
      * @throws CashAddressException
      */

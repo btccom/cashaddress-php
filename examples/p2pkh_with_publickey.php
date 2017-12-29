@@ -18,4 +18,4 @@ if ($argc > 2) {
 $publicKey = pack("H*", $publicKeyHex);
 
 $address = CashAddress::pubKeyHashFromKey($prefix, $publicKey);
-echo $address.PHP_EOL;
+echo $address . PHP_EOL;
