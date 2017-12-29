@@ -2,7 +2,7 @@
 
 namespace CashAddr;
 
-use CashAddr\Exception\CashAddrException;
+use CashAddr\Exception\Base32Exception;
 use CashAddr\Exception\InvalidChecksumException;
 
 class Base32
@@ -130,12 +130,12 @@ class Base32
      * @param string $prefix - string prefix
      * @param array $words - 5bit words (array)
      * @return string
-     * @throws CashAddrException
+     * @throws Base32Exception
      */
     public static function encode($prefix, array $words)
     {
         if ((strlen($prefix) + 7 + count($words)) > 90) {
-            throw new CashAddrException();
+            throw new Base32Exception();
         }
 
         $prefix = strtolower($prefix);
@@ -169,18 +169,18 @@ class Base32
     /**
      * @param string $string - base32 string
      * @return array<string, array<int>> - array<prefix, array<5 bit int>>
-     * @throws CashAddrException
+     * @throws Base32Exception
      * @throws InvalidChecksumException
      */
     public static function decode($string)
     {
         $stringLen = strlen($string);
         if ($stringLen < 8) {
-            throw new CashAddrException("Address too short");
+            throw new Base32Exception("Address too short");
         }
 
         if ($stringLen > 90) {
-            throw new CashAddrException("Address too long");
+            throw new Base32Exception("Address too long");
         }
 
         $chars = array_values(unpack("C*", $string));
@@ -192,7 +192,7 @@ class Base32
         for ($i = 0; $i < $stringLen; $i++) {
             $x = $chars[$i];
             if ($x < 33 || $x > 126) {
-                throw new CashAddrException("Out of range character in base32 string");
+                throw new Base32Exception("Out of range character in base32 string");
             }
 
             if ($x >= 0x61 && $x <= 0x7a) {
@@ -210,26 +210,29 @@ class Base32
         }
 
         if ($haveUpper && $haveLower) {
-            throw new CashAddrException("Data contains mixture of higher/lower case characters");
+            throw new Base32Exception("Data contains mixture of higher/lower case characters");
         }
 
         if ($idxSeparator === -1) {
-            throw new CashAddrException("Missing separator character");
+            throw new Base32Exception("Missing separator character");
         } else if ($idxSeparator === 0) {
-            throw new CashAddrException("Missing prefix");
+            throw new Base32Exception("Missing prefix");
         } else if (($idxSeparator + 7) > $stringLen) {
-            throw new CashAddrException("Invalid location for separator character");
+            throw new Base32Exception("Invalid location for separator character");
         }
 
         $prefix = pack("C*", ...array_slice($chars, 0, $idxSeparator));
         $chk = self::prefixChk($prefix);
 
+        $words = [];
         for ($i = $idxSeparator + 1; $i < $stringLen; $i++) {
             $char = $chars[$i];
             if (!array_key_exists($char, self::$charsetKey)) {
-                throw new CashAddrException("Unknown character in address");
+                throw new Base32Exception("Unknown character in address");
             }
-            $chk = self::bitwiseXor(self::polyModStep($chk), gmp_init($char));
+            $word = self::$charsetKey[$char];
+            $chk = self::bitwiseXor(self::polyModStep($chk), gmp_init($word));
+            $words[] = $word;
         }
 
         if (gmp_cmp($chk, gmp_init(1)) !== 0) {
@@ -238,7 +241,7 @@ class Base32
 
         return [
             $prefix,
-            array_slice($chars, 0, -self::$checksumLen)
+            array_slice($words, 0, -self::$checksumLen)
         ];
     }
 
@@ -249,7 +252,7 @@ class Base32
      * @param int $numBytes
      * @param int[] $bytes
      * @return int[]
-     * @throws CashAddrException
+     * @throws Base32Exception
      */
     public static function toWords($numBytes, array $bytes)
     {
@@ -263,7 +266,7 @@ class Base32
      * @param int $numWords
      * @param int[] $words
      * @return int[]
-     * @throws CashAddrException
+     * @throws Base32Exception
      */
     public static function fromWords($numWords, array $words)
     {
@@ -279,7 +282,7 @@ class Base32
      * @param int $toBits - requested word size (bit count)
      * @param bool $pad - whether to pad (only when encoding)
      * @return int[]
-     * @throws CashAddrException
+     * @throws Base32Exception
      */
     protected static function convertBits(array $data, $inLen, $fromBits, $toBits, $pad = true)
     {
@@ -292,7 +295,7 @@ class Base32
         for ($i = 0; $i < $inLen; $i++) {
             $value = $data[$i];
             if ($value < 0 || $value >> $fromBits) {
-                throw new CashAddrException('Invalid value for convert bits');
+                throw new Base32Exception('Invalid value for convert bits');
             }
 
             $acc = (($acc << $fromBits) | $value) & $maxacc;
@@ -309,7 +312,7 @@ class Base32
                 $ret[] = ($acc << $toBits - $bits) & $maxv;
             }
         } else if ($bits >= $fromBits || ((($acc << ($toBits - $bits))) & $maxv)) {
-            throw new CashAddrException('Invalid data');
+            throw new Base32Exception('Invalid data');
         }
 
         return $ret;

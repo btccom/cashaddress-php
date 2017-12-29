@@ -2,7 +2,7 @@
 
 namespace CashAddr\Exception;
 
-class CashAddrException extends \Exception
+class Base32Exception extends \Exception
 {
 
 }

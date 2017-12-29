@@ -4,6 +4,11 @@
       "CashAddr\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Test\\CashAddr\\": "test/"
+    }
+  },
   "require": {
     "ext-gmp": "*",
     "phpunit/phpunit": "^5.7",

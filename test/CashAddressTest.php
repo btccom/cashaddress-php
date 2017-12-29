@@ -3,110 +3,35 @@
 namespace Test\CashAddr;
 
 use CashAddr\Base32;
-use CashAddr\Exception\CashAddrException;
-use CashAddr\Exception\InvalidChecksumException;
+use CashAddr\CashAddress;
 
-class CashAddressTest extends \PHPUnit_Framework_TestCase
+class CashAddressTest extends TestBase
 {
-    public function readTest()
-    {
-        $decoded = json_decode(file_get_contents(__DIR__ . "/fixtures.json"), true);
-        if (false === $decoded) {
-            throw new \RuntimeException("Invalid json in test fixture");
-        }
-
-        return $decoded;
-    }
-
-    public function getValidTestCase()
-    {
-        $fixtures = [];
-        foreach ($this->readTest()['valid'] as $valid) {
-            $fixtures[] = [$valid['string'], $valid['prefix'], $valid['hex'], $valid['words'],];
-        }
-
-        return $fixtures;
-    }
-
-    public function getDecodeFailTestCase()
-    {
-        $fixtures = [];
-        foreach ($this->readTest()['invalid'] as $invalid) {
-            if (!array_key_exists('string', $invalid)) {
-                continue;
-            }
-            $fixtures[] = [$invalid['string'], $invalid['exception'],];
-        }
-
-        return $fixtures;
-    }
-
     /**
-     * @throws \CashAddr\Exception\CashAddrException
-     * @param string $string
-     * @param string $prefix
-     * @param string $hex
+     * @param $string
+     * @param $prefix
+     * @param $hex
      * @param array $words
+     * @throws \CashAddr\Exception\Base32Exception
+     * @throws \CashAddr\Exception\CashAddressException
      * @dataProvider getValidTestCase
      */
-    public function testFromAndToWords($string, $prefix, $hex, array $words)
+    public function testCashAddress($string, $prefix, $hex, array $words, $scriptType)
     {
-        $binary = hex2bin($hex);
-        $vBytes = array_values(unpack("C*", $binary));
-        $numBytes = count($vBytes);
-        $genWords = Base32::toWords($numBytes, $vBytes);
-        $origBytes = Base32::fromWords(count($genWords), $words);
-        $this->assertEquals($words, $genWords);
-        $this->assertEquals($binary, pack("C*", ...$origBytes));
-    }
+        list ($retPrefix, $retScriptType, $retHash) = CashAddress::decode($string);
+        $this->assertEquals($prefix, $retPrefix);
+        $this->assertEquals($scriptType, $retScriptType);
 
-    /**
-     * @param string $string
-     * @param string $prefix
-     * @param string $hex
-     * @param array $words
-     * @throws \CashAddr\Exception\CashAddrException
-     * @dataProvider getValidTestCase
-     */
-    public function testEncode($string, $prefix, $hex, array $words)
-    {
-        $this->assertEquals($string, Base32::encode($prefix, $words));
-    }
-
-    /**
-     * @param string $string
-     * @param string $prefix
-     * @param string $hex
-     * @param array $words
-     * @throws \CashAddr\Exception\CashAddrException
-     * @dataProvider getValidTestCase
-     */
-    public function testFailsForStringWith1BitFlipped($string, $prefix, $hex, array $words)
-    {
-        $sepIdx = strrpos($string, Base32::SEPARATOR);
-        $this->assertNotEquals(-1, $sepIdx, "separator was not found in fixture");
-
-        $vchArray = str_split($string, 1);
-        $vchArray[$sepIdx + 1] = ord($vchArray[$sepIdx + 1]) ^ 1;
-        $string = implode($vchArray);
-
-        $this->expectException(InvalidChecksumException::class);
-
-        Base32::decode($string);
-    }
-
-    /**
-     * @param string $string
-     * @param string $exception
-     * @dataProvider getDecodeFailTestCase
-     */
-    public function testDecodeFails($string, $exception = "")
-    {
-        $this->expectException(CashAddrException::class);
-        if ($exception !== "") {
-            $this->expectExceptionMessage($exception);
+        if ($scriptType === "scripthash" ) {
+            $this->assertEquals(20, strlen($retHash));
+        } else if ($scriptType === "pubkeyhash") {
+            $this->assertEquals(20, strlen($retHash));
         }
 
-        Base32::decode($string);
+        $rebuildPayload = unpack("H*", pack("C*", ...Base32::fromWords(count($words), $words)))[1];
+        $this->assertEquals($hex, $rebuildPayload);
+
+        $encodeAgain = CashAddress::encode($retPrefix, $retScriptType, $retHash);
+        $this->assertEquals($string, $encodeAgain);
     }
 }

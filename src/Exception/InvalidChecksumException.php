@@ -2,7 +2,7 @@
 
 namespace CashAddr\Exception;
 
-class InvalidChecksumException extends CashAddrException
+class InvalidChecksumException extends Base32Exception
 {
 
 }
