@@ -82,6 +82,76 @@ class CashAddress
     }
 
     /**
+     * This function does not validate public keys beyond their
+     * size and prefix. It will hash the data and produce the address,
+     * even if it's invalid. You MUST validate them elsewhere.
+     *
+     * @param $prefix
+     * @param $publicKey
+     * @return string
+     * @throws Base32Exception
+     * @throws CashAddressException
+     */
+    public static function pubKeyHashFromKey($prefix, $publicKey)
+    {
+        $length = strlen($publicKey);
+        if ($length === 33) {
+            if ($publicKey[0] !== "\x02" && $publicKey[0] !== "\x03") {
+                throw new CashAddressException("Invalid public key");
+            }
+        } else if ($length === 65) {
+            if ($publicKey[0] !== "\x04") {
+                throw new CashAddressException("Invalid public key");
+            }
+        } else {
+            throw new CashAddressException("Invalid public key");
+        }
+
+        return self::pubKeyHash($prefix, hash('ripemd160', hash('sha256', $publicKey, true), true));
+    }
+
+    /**
+     * @param string $prefix
+     * @param string $pubKeyHash
+     * @return string
+     * @throws Base32Exception
+     * @throws CashAddressException
+     */
+    public static function pubKeyHash($prefix, $pubKeyHash)
+    {
+        return self::hash160Type($prefix, "pubkeyhash", $pubKeyHash);
+    }
+
+    /**
+     * @param string $prefix
+     * @param string $scriptHash
+     * @return string
+     * @throws Base32Exception
+     * @throws CashAddressException
+     */
+    public static function scriptHash($prefix, $scriptHash)
+    {
+        return self::hash160Type($prefix, "scripthash", $scriptHash);
+    }
+
+    /**
+     * @param string $prefix
+     * @param string $type
+     * @param string $hash160
+     * @return string
+     * @throws Base32Exception
+     * @throws CashAddressException
+     */
+    protected static function hash160Type($prefix, $type, $hash160)
+    {
+        if (strlen($hash160) !== 20) {
+            throw new CashAddressException("{$type} must be 20 bytes");
+        }
+
+        return self::encode($prefix, $type, $hash160);
+    }
+
+    /**
      * @param string $scriptType
      * @param int $hashLengthBits
      * @return int
@@ -138,7 +208,7 @@ class CashAddress
      * @return array<string, string> - script type and hash
      * @throws CashAddressException
      */
-    public static function extractPayload($numBytes, $payloadBytes)
+    protected static function extractPayload($numBytes, $payloadBytes)
     {
         if ($numBytes < 1) {
             throw new CashAddressException("Empty base32 string");
@@ -154,5 +224,4 @@ class CashAddress
 
         return [$scriptType, $hash];
     }
-
 }
