@@ -4,7 +4,7 @@
   "homepage": "https://github.com/btccom/cashaddr-php",
   "type": "library",
   "keywords": ["bitcoin cash", "base32", "cashaddr"],
-  "licence": "MIT",
+  "license": "MIT",
   "support": {
     "issues": "https://github.com/btccom/cashaddr-php/issues",
     "source": "https://github.com/btccom/cashaddr-php"
