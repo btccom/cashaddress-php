@@ -31,7 +31,7 @@ before_script:
 script:
     - |
         if [ "${COVERAGE}" = "true" ]; then
-            vendor/bin/phpunit --coverage-clover=build/clover.xml -c phpunit.xml
+            vendor/bin/phpunit --coverage-clover=build/coverage.clover -c phpunit.xml
         else
             vendor/bin/phpunit -c phpunit.xml
         fi

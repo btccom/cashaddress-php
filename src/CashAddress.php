@@ -205,7 +205,7 @@ class CashAddress
     /**
      * @param int $numBytes
      * @param int[] $payloadBytes
-     * @return array<string, string> - script type and hash
+     * @return string[] - script type and hash
      * @throws CashAddressException
      */
     protected static function extractPayload($numBytes, $payloadBytes)
