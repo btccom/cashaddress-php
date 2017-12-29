@@ -1,0 +1,30 @@
+
+language: php
+
+php:
+  - 5.6
+  - hhvm
+  - 7.0
+  - 7.1
+  - 7.2
+  - nightly
+
+dist: trusty
+
+install:
+    - composer update
+
+before_script:
+  - if [ "${COVERAGE}" != "true" ] && [ "$TRAVIS_PHP_VERSION" != "hhvm" ] && [ "$TRAVIS_PHP_VERSION" != "nightly" ]; then phpenv config-rm xdebug.ini && echo "xdebug disabled"; fi
+
+script:
+  - vendor/bin/phpunit -c phpunit.xml
+  - vendor/bin/phpcs -n --standard=PSR1,PSR2 src test examples
+  - ./validate_examples.sh
+
+after_script:
+  - |
+      if [ "${COVERAGE}" != "true" ] && [ "$TRAVIS_PHP_VERSION" != "hhvm" ] && [ "$TRAVIS_PHP_VERSION" != "nightly" ]; then 
+        wget https://scrutinizer-ci.com/ocular.phar
+        php ocular.phar code-coverage:upload --format=php-clover build/coverage.clover;
+      fi   
