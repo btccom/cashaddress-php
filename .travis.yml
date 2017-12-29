@@ -11,20 +11,33 @@ php:
 
 dist: trusty
 
+matrix:
+  include:
+    - php: 5.6
+      env: COVERAGE=true
+
 install:
     - composer update
 
 before_script:
-  - if [ "${COVERAGE}" != "true" ] && [ "$TRAVIS_PHP_VERSION" != "hhvm" ] && [ "$TRAVIS_PHP_VERSION" != "nightly" ]; then phpenv config-rm xdebug.ini && echo "xdebug disabled"; fi
+    - |
+        if [ "${COVERAGE}" != "true" ] && [ "$TRAVIS_PHP_VERSION" != "hhvm" ] && [ "$TRAVIS_PHP_VERSION" != "nightly" ]; then
+            phpenv config-rm xdebug.ini && echo "xdebug disabled"
+        fi
 
 script:
-  - vendor/bin/phpunit -c phpunit.xml
+    - |
+        if [ "${COVERAGE}" = "true" ]; then
+            vendor/bin/phpunit --coverage-clover=build/clover.xml -c phpunit.xml
+        else
+            vendor/bin/phpunit -c phpunit.xml
+        fi
   - vendor/bin/phpcs -n --standard=PSR1,PSR2 src test examples
   - ./validate_examples.sh
 
 after_script:
   - |
-      if [ "${COVERAGE}" != "true" ] && [ "$TRAVIS_PHP_VERSION" != "hhvm" ] && [ "$TRAVIS_PHP_VERSION" != "nightly" ]; then 
+      if [ "${COVERAGE}" = "true" ]; then
         wget https://scrutinizer-ci.com/ocular.phar
         php ocular.phar code-coverage:upload --format=php-clover build/coverage.clover;
       fi   
