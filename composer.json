@@ -1,5 +1,5 @@
 {
-  "name": "btccom/cashaddress-php",
+  "name": "btccom/cashaddress",
   "description": "Implementation of bitcoin cash base32 addresses",
   "homepage": "https://github.com/btccom/cashaddr-php",
   "type": "library",
