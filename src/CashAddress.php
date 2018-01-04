@@ -41,7 +41,7 @@ class CashAddress
     public static function encode($prefix, $scriptType, $hash)
     {
         if (!array_key_exists($scriptType, self::$versionBits)) {
-            throw new \RuntimeException("Unsupported script type");
+            throw new CashAddressException("Unsupported script type");
         }
 
         $hashLength = strlen($hash);
@@ -157,7 +157,7 @@ class CashAddress
      * @return int
      * @throws CashAddressException
      */
-    protected static function createVersion($scriptType, $hashLengthBits)
+    public static function createVersion($scriptType, $hashLengthBits)
     {
         if (($scriptType === "pubkeyhash" || $scriptType === "scripthash") && $hashLengthBits !== 160) {
             throw new CashAddressException("Invalid hash length [$hashLengthBits bits] for {$scriptType}");
@@ -181,9 +181,6 @@ class CashAddress
         $hashMarkerBits = ($version & 0x07);
 
         $hashBitsMap = array_flip(self::$hashBits);
-        if (!array_key_exists($hashMarkerBits, $hashBitsMap)) {
-            throw new CashAddressException("Invalid version or hash length");
-        }
         $hashLength = $hashBitsMap[$hashMarkerBits];
 
         switch ($scriptMarkerBits) {
@@ -195,6 +192,10 @@ class CashAddress
                 break;
             default:
                 throw new CashAddressException('Invalid version or script type');
+        }
+
+        if (($scriptType === "pubkeyhash" || $scriptType === "scripthash") && $hashLength !== 160) {
+            throw new CashAddressException("Mismatch between script type and hash length");
         }
 
         return [
@@ -211,12 +212,12 @@ class CashAddress
     protected static function extractPayload($numBytes, $payloadBytes)
     {
         if ($numBytes < 1) {
-            throw new CashAddressException("Empty base32 string");
+            throw new CashAddressException("Empty payload in address");
         }
 
         list ($scriptType, $hashLengthBits) = self::decodeVersion($payloadBytes[0]);
 
-        if (($hashLengthBits / 8) !== $numBytes - 1) {
+        if (1 + ($hashLengthBits / 8) !== $numBytes) {
             throw new CashAddressException("Hash length does not match version");
         }
 
