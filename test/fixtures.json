@@ -66,5 +66,29 @@
       "string": "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6z",
       "exception": ""
     }
-  ]
+  ],
+  "address": {
+    "invalid": [
+      {
+        "string": "bitcoincash:qqyq78nf2w",
+        "exception": "Hash length does not match version"
+      },
+      {
+        "string": "bitcoincash:a5a8yrhz",
+        "exception": "Empty payload in address"
+      },
+      {
+        "string": "bitcoincash:qdpyysjzgfpyysjzgfpyysjzgfpyysjzgg8zlhfxky",
+        "exception": "Mismatch between script type and hash length"
+      },
+      {
+        "string": "bitcoincash:yppyysjzgfpyysjzgfpyysjzgfpyysjzggc5ldue0t",
+        "exception": "Invalid version or script type"
+      },
+      {
+        "string": "bitcoincash:lapyysjzgfpyysjzgfpyysjzgfpyysjzggp9pz6yrw",
+        "exception": "Invalid version - MSB is reserved"
+      }
+    ]
+  }
 }

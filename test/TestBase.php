@@ -36,4 +36,14 @@ class TestBase extends \PHPUnit_Framework_TestCase
 
         return $fixtures;
     }
+
+    public function getAddressDecodeFailTestCase()
+    {
+        $fixtures = [];
+        foreach ($this->readTest()['address']['invalid'] as $invalid) {
+            $fixtures[] = [$invalid['string'], $invalid['exception'],];
+        }
+
+        return $fixtures;
+    }
 }

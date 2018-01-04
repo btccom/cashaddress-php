@@ -89,4 +89,28 @@ class CashAddressTest extends TestBase
 
         CashAddress::pubKeyHashFromKey("bitcoincash", hex2bin($publicKey));
     }
+
+    /**
+     * @dataProvider getAddressDecodeFailTestCase
+     * @param $string
+     * @param $exception
+     * @param $exceptionMessage
+     * @throws CashAddressException
+     * @throws \CashAddr\Exception\Base32Exception
+     */
+    public function testCashDecodeFails($string, $exceptionMessage)
+    {
+        $this->expectException(CashAddressException::class);
+        $this->expectExceptionMessage($exceptionMessage);
+
+        CashAddress::decode($string);
+    }
+
+    public function testRejectsInvalidScriptType()
+    {
+        $this->expectException(CashAddressException::class);
+        $this->expectExceptionMessage("Unsupported script type");
+
+        CashAddress::encode("bitcoincash", "segwit", []);
+    }
 }
