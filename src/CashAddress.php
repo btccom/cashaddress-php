@@ -225,4 +225,55 @@ class CashAddress
 
         return [$scriptType, $hash];
     }
+    
+        /**
+     * Convert one form of an address into another
+     * ie SLP into BCH and vice versa
+     * 
+     * @param string $prefix
+     * @param string $address
+     * @return string
+     * @throws Base32Exception
+     * @throws CashAddressException
+     */
+    public static function convert($prefix, $address)
+    {
+        list($one, $two, $dec) = CashAddress::decode($address);
+        $keyHash = pack("H*", bin2hex($dec));
+        $newAddress = CashAddress::pubKeyHash($prefix, $keyHash);
+        return $newAddress;
+    }
+
+    /**
+     * Convert and address into its public hash version
+     * 
+     * @param string $prefix
+     * @param string $address
+     * @return string
+     * @throws Base32Exception
+     * @throws CashAddressException
+     */
+    public static function address2Hash($address)
+    {
+        list($one, $two, $dec) = CashAddress::decode($address);
+        $keyHash = pack("H*", bin2hex($dec));
+        return $keyHash;
+    }
+
+    /**
+     * Convert payment data into a BitcoinCash address
+     * 
+     * @param string $prefix
+     * @param string $address
+     * @return string
+     * @throws Base32Exception
+     * @throws CashAddressException
+     */
+    public static function keyHash2BCH($keyHash)
+    {
+
+        $keyHashBin = pack("H*", $keyHash);
+        $t = CashAddress::pubKeyHash("bitcoincash", $keyHashBin);
+        return $t;
+    }
 }
