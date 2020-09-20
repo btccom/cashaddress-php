@@ -1,0 +1,25 @@
+<?php
+
+require "../src/CashAddress.php";
+require "../src/Base32.php";
+require "../src/Exception/Base32Exception.php";
+require "../src/Exception/CashAddressException.php";
+
+use CashAddr\CashAddress;
+
+$prefix = "bitcoincash";
+$bch = "bitcoincash:qqv038dtl2el9hd8khyfylvlz65ujus8wsdk00mn0f";
+$slp = "simpleledger:qqv038dtl2el9hd8khyfylvlz65ujus8wspdy5wn3h";
+
+if ($argc > 1) {
+    $prefix = $argv[1];
+}
+
+if ($argc > 2) {
+    $slp = $argv[2];
+}
+
+$address = CashAddress::convert($prefix, $slp);
+echo $address . PHP_EOL;
+
+?>
